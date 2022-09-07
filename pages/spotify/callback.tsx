@@ -1,74 +1,20 @@
-import {
-  Accordion,
-  Alert,
-  Avatar,
-  Box,
-  Button,
-  Center,
-  Container,
-  createStyles,
-  Group,
-  Paper,
-  Stack,
-  Text,
-  useMantineTheme,
-} from "@mantine/core";
-import {
-  IconPlus,
-  IconAlertTriangle,
-  IconBrandSpotify,
-  IconX,
-  IconCircleX,
-  IconLogout,
-  IconCircleCheck,
-} from "@tabler/icons";
-import { motion } from "framer-motion";
+import { createStyles, Text, useMantineTheme } from "@mantine/core";
+import { IconCircleX, IconLogout, IconCircleCheck } from "@tabler/icons";
 import * as database from "@lib/database";
-
-import spotifyIcon from "@images/spotify-icon.png";
 import { withSessionSsr } from "@lib/withSession";
 import IconCard from "@components/IconCard";
-import { randomBytes } from "crypto";
 import * as spotify from "@lib/spotify";
 
-interface SpotifyLinkPageProps {
-  url: string;
-  avatar: string;
-  error?: "invalid_token" | "expired";
+interface SpotifyCallbackPageProps {
+  error?: "access_denied" | "bad_request" | "code_invalid" | "premium_required";
 }
 
-const useStyles = createStyles((theme) => ({
-  root: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "flex-start",
-  },
-
-  wrapper: {
-    width: "500px",
-    minHeight: "600px",
-  },
-
-  container: {
-    height: "100%",
-    background: theme.colors.dark[6],
-    padding: theme.spacing.xl,
-    borderRadius: theme.radius.md,
-  },
-}));
-
-export default function SpotifyLinkPage({
-  url,
-  avatar,
+export default function SpotifyCallbackPage({
   error,
-}: SpotifyLinkPageProps) {
-  const { classes } = useStyles();
-
+}: SpotifyCallbackPageProps) {
   const theme = useMantineTheme();
 
-  const ERRORS: { [key: string]: [string, JSX.Element, JSX.Element] } = {
+  const ERRORS: { [key: string]: [string, JSX.Element] } = {
     // User cancelled the login
     access_denied: [
       "Account connection failed",
@@ -77,11 +23,6 @@ export default function SpotifyLinkPage({
           You have cancelled the connection process
         </Text>
       </>,
-      <IconLogout
-        size={64}
-        color={theme.colors.red[5]}
-        style={{ display: "block" }}
-      />,
     ],
 
     // Invalid query params, CSRF mismatch, or state is invalid (mismatch or expired)
@@ -96,12 +37,6 @@ export default function SpotifyLinkPage({
           again.
         </Text>
       </>,
-      <IconCircleX
-        stroke={1.5}
-        size={64}
-        color={theme.colors.red[5]}
-        style={{ display: "block" }}
-      />,
     ],
 
     // The code provided is invalid
@@ -112,12 +47,6 @@ export default function SpotifyLinkPage({
           The authorization code provided is invalid. Please try again.
         </Text>
       </>,
-      <IconCircleX
-        stroke={1.5}
-        size={64}
-        color={theme.colors.red[5]}
-        style={{ display: "block" }}
-      />,
     ],
 
     premium_required: [
@@ -127,28 +56,20 @@ export default function SpotifyLinkPage({
           You need a Spotify Premium account to be able to use Spoticord
         </Text>
       </>,
-      <IconCircleX
-        stroke={1.5}
-        size={64}
-        color={theme.colors.red[5]}
-        style={{ display: "block" }}
-      />,
     ],
-  };
-
-  const onCancelButtonClicked = () => {
-    window.close();
-    window.location.href = "/";
-  };
-
-  const onAuthorizeButtonClicked = () => {
-    window.open(url);
   };
 
   if (error)
     return (
       <IconCard
-        icon={ERRORS[error][2]}
+        icon={
+          <IconCircleX
+            stroke={1.5}
+            size={64}
+            color={theme.colors.red[5]}
+            style={{ display: "block" }}
+          />
+        }
         title={ERRORS[error][0]}
         description={ERRORS[error][1]}
         close
@@ -174,11 +95,11 @@ export default function SpotifyLinkPage({
         </>
       }
       close
+      closeColor="teal"
     />
   );
 }
 
-// Path: pages/spotify/[token].tsx
 export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   const { code, error, state } = query;
 
@@ -198,10 +119,9 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   }
 
   try {
+    // Check for CSRF mismatches
     const [request, csrf_token] = state.split(":");
     const { token: client_csrf_token } = req.session;
-
-    // req.session.destroy();
 
     if (csrf_token !== client_csrf_token) {
       console.warn("CSRF token mismatch");
@@ -211,6 +131,7 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
 
     const user = await database.getUserByRequest(request);
 
+    // Drop expired requests
     if (user.request!.expires < Math.floor(Date.now() / 1000)) {
       return { props: { error: "bad_request" } };
     }
@@ -220,10 +141,12 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
 
     const product = (await spotify.getCurrentUser(access_token)).product;
 
+    // No premium, no party
     if (product !== "premium") {
       return { props: { error: "premium_required" } };
     }
 
+    // Insert Spotify account into database
     try {
       await database.createAccount({
         access_token,
@@ -235,6 +158,7 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
       return { props: { error: "bad_request" } };
     }
 
+    // No repeatsies
     await database.deleteRequest(user.id);
 
     return { props: {} };

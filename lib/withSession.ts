@@ -1,7 +1,9 @@
 import type { IronSessionOptions } from "iron-session";
 import { withIronSessionSsr } from "iron-session/next";
-import { randomBytes } from "crypto";
+import assert from "assert";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+
+assert(process.env.SESSION_PASSWORD);
 
 declare module "iron-session" {
   interface IronSessionData {
@@ -11,7 +13,7 @@ declare module "iron-session" {
 
 const sessionOptions: IronSessionOptions = {
   cookieName: "csrf-session",
-  password: randomBytes(64).toString("hex"),
+  password: process.env.SESSION_PASSWORD,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
   },

@@ -1,26 +1,14 @@
 import {
-  Alert,
-  Avatar,
-  Box,
   Button,
   Center,
   Container,
   createStyles,
-  Group,
+  DefaultMantineColor,
   Paper,
-  Stack,
   Text,
-  ThemeIcon,
   useMantineTheme,
 } from "@mantine/core";
-import {
-  IconAlertTriangle,
-  IconArrowLeft,
-  IconBrandSpotify,
-  IconCircleX,
-  IconPlus,
-  IconX,
-} from "@tabler/icons";
+import { IconArrowLeft, IconX } from "@tabler/icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/router";
 
@@ -46,6 +34,7 @@ interface ErrorCardProps {
   title: string | JSX.Element;
   description: string | JSX.Element;
   close?: boolean;
+  closeColor?: DefaultMantineColor;
 }
 
 export default function ErrorCard({
@@ -53,6 +42,7 @@ export default function ErrorCard({
   title,
   description,
   close,
+  closeColor,
 }: ErrorCardProps) {
   const { classes } = useStyles();
   const router = useRouter();
@@ -100,8 +90,9 @@ export default function ErrorCard({
               fullWidth
               mt="xl"
               leftIcon={close ? <IconX /> : <IconArrowLeft />}
-              color="red"
+              color={closeColor || "red"}
               onClick={onButtonClicked}
+              styles={{ leftIcon: { marginRight: 4 } }}
             >
               {close ? "Close" : "Back"}
             </Button>

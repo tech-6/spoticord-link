@@ -189,11 +189,11 @@ export default function SpotifyLinkPage({
 
             <Stack align={"flex-end"}>
               <Alert
+                sx={{ width: "100%" }}
                 icon={<IconAlertTriangle />}
                 title="Premium account required"
               >
-                The use of a Spotify premium account is mandatory to be able to
-                use Spoticord
+                The use of a Spotify premium account is mandatory
               </Alert>
 
               <Group>
