@@ -3,7 +3,7 @@ import { withIronSessionSsr } from "iron-session/next";
 import assert from "assert";
 import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
 
-assert(process.env.SESSION_PASSWORD);
+assert(process.env.SESSION_PASSWORD, "SESSION_PASSWORD is required");
 
 declare module "iron-session" {
   interface IronSessionData {
