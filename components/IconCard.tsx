@@ -1,10 +1,12 @@
 import {
+  Box,
   Button,
   Center,
   Container,
   createStyles,
   DefaultMantineColor,
   Paper,
+  Stack,
   Text,
 } from "@mantine/core";
 import { IconArrowLeft, IconX } from "@tabler/icons";
@@ -18,6 +20,14 @@ const useStyles = createStyles((theme) => ({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "flex-start",
+
+    [theme.fn.smallerThan("md")]: {
+      alignItems: "center",
+    },
+
+    [theme.fn.smallerThan("xs")]: {
+      padding: 0,
+    },
   },
 
   container: {
@@ -25,6 +35,13 @@ const useStyles = createStyles((theme) => ({
     background: theme.colors.dark[6],
     padding: theme.spacing.xl,
     borderRadius: theme.radius.md,
+
+    [theme.fn.smallerThan("xs")]: {
+      margin: 0,
+      minWidth: "100%",
+      width: "100vw",
+      height: "100vh",
+    },
   },
 }));
 
@@ -49,7 +66,7 @@ export default function ErrorCard({
   const onButtonClicked = () => {
     if (close) {
       window.close();
-      window.location.href = "/";
+      router.push("/");
     } else router.back();
   };
 
@@ -60,38 +77,42 @@ export default function ErrorCard({
         animate={{ x: 0, opacity: 1 }}
       >
         <Paper className={classes.container} shadow={"sm"}>
-          <Center>
-            <motion.div initial={{ rotate: 90 }} animate={{ rotate: 0 }}>
-              {icon}
-            </motion.div>
-          </Center>
+          <Stack sx={{ height: "100%" }} justify="space-between">
+            <Box>
+              <Center>
+                <motion.div initial={{ rotate: 90 }} animate={{ rotate: 0 }}>
+                  {icon}
+                </motion.div>
+              </Center>
 
-          {typeof title === "string" ? (
-            <Text align="center" mt="lg" size={24} weight={700}>
-              {title}
-            </Text>
-          ) : (
-            title
-          )}
+              {typeof title === "string" ? (
+                <Text align="center" mt="lg" size={24} weight={700}>
+                  {title}
+                </Text>
+              ) : (
+                title
+              )}
 
-          {typeof description === "string" ? (
-            <Text color="dimmed" align="center">
-              {description}
-            </Text>
-          ) : (
-            description
-          )}
+              {typeof description === "string" ? (
+                <Text color="dimmed" align="center">
+                  {description}
+                </Text>
+              ) : (
+                description
+              )}
+            </Box>
 
-          <Button
-            fullWidth
-            mt="xl"
-            leftIcon={close ? <IconX /> : <IconArrowLeft />}
-            color={closeColor || "red"}
-            onClick={onButtonClicked}
-            styles={{ leftIcon: { marginRight: 4 } }}
-          >
-            {close ? "Close" : "Back"}
-          </Button>
+            <Button
+              mt="xl"
+              fullWidth
+              leftIcon={close ? <IconX /> : <IconArrowLeft />}
+              color={closeColor || "red"}
+              onClick={onButtonClicked}
+              styles={{ leftIcon: { marginRight: 4 } }}
+            >
+              {close ? "Close" : "Back"}
+            </Button>
+          </Stack>
         </Paper>
       </motion.div>
     </Container>

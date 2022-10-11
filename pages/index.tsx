@@ -137,11 +137,7 @@ const ERRORS: { [key: string]: [string, JSX.Element] } = {
   ],
 };
 
-export default function SpotifyLinkPage({
-  url,
-  avatar,
-  error,
-}: SpotifyLinkPageProps) {
+export default function SpotifyLinkPage() {
   const { classes, cx } = useStyles();
 
   const theme = useMantineTheme();
@@ -152,22 +148,22 @@ export default function SpotifyLinkPage({
     router.push("/");
   };
 
-  if (error)
-    return (
-      <IconCard
-        icon={
-          <IconCircleX
-            color={theme.colors.red[5]}
-            size={64}
-            stroke={1.5}
-            style={{ display: "block" }}
-          />
-        }
-        title={ERRORS[error][0]}
-        description={ERRORS[error][1]}
-        close
-      />
-    );
+  // if (error)
+  //   return (
+  //     <IconCard
+  //       icon={
+  //         <IconCircleX
+  //           color={theme.colors.red[5]}
+  //           size={64}
+  //           stroke={1.5}
+  //           style={{ display: "block" }}
+  //         />
+  //       }
+  //       title={ERRORS[error][0]}
+  //       description={ERRORS[error][1]}
+  //       close
+  //     />
+  //   );
 
   return (
     <Container className={classes.root}>
@@ -182,7 +178,7 @@ export default function SpotifyLinkPage({
             <Box>
               <Center>
                 <Group>
-                  <Avatar src={avatar} radius={1000000} size="xl" />
+                  {/* <Avatar src={avatar} radius={1000000} size="xl" /> */}
                   <IconPlus size={64} color="white" />
                   <Avatar src={spotifyIcon.src} radius={1000000} size="xl" />
                 </Group>
@@ -228,7 +224,7 @@ export default function SpotifyLinkPage({
                 </Button>
                 <Button
                   component="a"
-                  href={url}
+                  // href={url}
                   leftIcon={<IconBrandSpotify />}
                 >
                   Connect Spotify
@@ -243,58 +239,58 @@ export default function SpotifyLinkPage({
 }
 
 // Path: pages/spotify/[token].tsx
-export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
-  // Check if the token is valid
-  if (!params || !params.token || typeof params.token !== "string") {
-    return {
-      notFound: true,
-    };
-  }
+// export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
+//   // Check if the token is valid
+//   if (!params || !params.token || typeof params.token !== "string") {
+//     return {
+//       notFound: true,
+//     };
+//   }
 
-  const { token } = params;
+//   const { token } = params;
 
-  try {
-    // Fetch user
-    const user = await database.getUserByRequest(token);
+//   try {
+//     // Fetch user
+//     const user = await database.getUserByRequest(token);
 
-    // Check if token has expired
-    if (user.request!.expires < Math.floor(Date.now() / 1000)) {
-      return {
-        props: {
-          error: "expired",
-        },
-      };
-    }
+//     // Check if token has expired
+//     if (user.request!.expires < Math.floor(Date.now() / 1000)) {
+//       return {
+//         props: {
+//           error: "expired",
+//         },
+//       };
+//     }
 
-    const avatar = await database.getUserAvatar(user.id);
-    const client_id = (await database.getSpotifyAppInfo()).client_id;
+//     const avatar = await database.getUserAvatar(user.id);
+//     const client_id = (await database.getSpotifyAppInfo()).client_id;
 
-    req.session.csrf_token = randomBytes(64).toString("hex");
+//     req.session.csrf_token = randomBytes(64).toString("hex");
 
-    const url = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(
-      process.env.REDIRECT_URI as string
-    )}&state=${encodeURIComponent(
-      `${token}:${req.session.csrf_token}`
-    )}&scope=${SCOPES.map((scope) => scope[0]).join("+")}&show_dialog=true`;
+//     const url = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(
+//       process.env.REDIRECT_URI as string
+//     )}&state=${encodeURIComponent(
+//       `${token}:${req.session.csrf_token}`
+//     )}&scope=${SCOPES.map((scope) => scope[0]).join("+")}&show_dialog=true`;
 
-    await req.session.save();
+//     await req.session.save();
 
-    return {
-      props: {
-        token,
-        avatar,
-        url,
-      },
-    };
-  } catch (ex: any) {
-    if (ex.status === 404) {
-      return {
-        props: {
-          error: "invalid_token",
-        },
-      };
-    }
+//     return {
+//       props: {
+//         token,
+//         avatar,
+//         url,
+//       },
+//     };
+//   } catch (ex: any) {
+//     if (ex.status === 404) {
+//       return {
+//         props: {
+//           error: "invalid_token",
+//         },
+//       };
+//     }
 
-    throw ex;
-  }
-});
+//     throw ex;
+//   }
+// });

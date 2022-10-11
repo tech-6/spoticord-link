@@ -7,7 +7,7 @@ assert(process.env.SESSION_PASSWORD, "SESSION_PASSWORD is required");
 
 declare module "iron-session" {
   interface IronSessionData {
-    token: string;
+    csrf_token: string;
   }
 }
 

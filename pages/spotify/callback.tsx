@@ -121,7 +121,7 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   try {
     // Check for CSRF mismatches
     const [request, csrf_token] = state.split(":");
-    const { token: client_csrf_token } = req.session;
+    const { csrf_token: client_csrf_token } = req.session;
 
     if (csrf_token !== client_csrf_token) {
       console.warn("CSRF token mismatch");

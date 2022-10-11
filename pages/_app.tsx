@@ -14,7 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        <title>Spoticord Connect</title>
+        <title>Spoticord Accounts</title>
 
         <link rel="icon" href={spoticordLogo.src} />
       </Head>
