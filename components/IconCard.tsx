@@ -6,10 +6,9 @@ import {
   DefaultMantineColor,
   Paper,
   Text,
-  useMantineTheme,
 } from "@mantine/core";
 import { IconArrowLeft, IconX } from "@tabler/icons";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/router";
 
 const useStyles = createStyles((theme) => ({
@@ -47,8 +46,6 @@ export default function ErrorCard({
   const { classes } = useStyles();
   const router = useRouter();
 
-  const theme = useMantineTheme();
-
   const onButtonClicked = () => {
     if (close) {
       window.close();
@@ -58,47 +55,45 @@ export default function ErrorCard({
 
   return (
     <Container className={classes.root}>
-      <AnimatePresence>
-        <motion.div
-          initial={{ x: -100, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-        >
-          <Paper className={classes.container} shadow={"sm"}>
-            <Center>
-              <motion.div initial={{ rotate: 90 }} animate={{ rotate: 0 }}>
-                {icon}
-              </motion.div>
-            </Center>
+      <motion.div
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+      >
+        <Paper className={classes.container} shadow={"sm"}>
+          <Center>
+            <motion.div initial={{ rotate: 90 }} animate={{ rotate: 0 }}>
+              {icon}
+            </motion.div>
+          </Center>
 
-            {typeof title === "string" ? (
-              <Text align="center" mt="lg" size={24} weight={700}>
-                {title}
-              </Text>
-            ) : (
-              title
-            )}
+          {typeof title === "string" ? (
+            <Text align="center" mt="lg" size={24} weight={700}>
+              {title}
+            </Text>
+          ) : (
+            title
+          )}
 
-            {typeof description === "string" ? (
-              <Text color="dimmed" align="center">
-                {description}
-              </Text>
-            ) : (
-              description
-            )}
+          {typeof description === "string" ? (
+            <Text color="dimmed" align="center">
+              {description}
+            </Text>
+          ) : (
+            description
+          )}
 
-            <Button
-              fullWidth
-              mt="xl"
-              leftIcon={close ? <IconX /> : <IconArrowLeft />}
-              color={closeColor || "red"}
-              onClick={onButtonClicked}
-              styles={{ leftIcon: { marginRight: 4 } }}
-            >
-              {close ? "Close" : "Back"}
-            </Button>
-          </Paper>
-        </motion.div>
-      </AnimatePresence>
+          <Button
+            fullWidth
+            mt="xl"
+            leftIcon={close ? <IconX /> : <IconArrowLeft />}
+            color={closeColor || "red"}
+            onClick={onButtonClicked}
+            styles={{ leftIcon: { marginRight: 4 } }}
+          >
+            {close ? "Close" : "Back"}
+          </Button>
+        </Paper>
+      </motion.div>
     </Container>
   );
 }

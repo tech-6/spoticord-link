@@ -42,7 +42,7 @@ export async function getUserByRequest(token: string): Promise<User> {
   return await response.json();
 }
 
-export async function getUserAvataer(user_id: string): Promise<string> {
+export async function getUserAvatar(user_id: string): Promise<string> {
   const response = await fetch(`${DATABASE_URL}/discord/avatar/${user_id}`);
 
   return (await response.json()).avatar;

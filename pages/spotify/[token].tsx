@@ -63,7 +63,8 @@ const SCOPES: [string, string, any][] = [
     <>
       <Text>Stream and control Spotify on your other devices.</Text>
       <Text color="dimmed" size="sm">
-        This is required for Spoticord to be able to read your playback state.
+        This is required for Spoticord to be able to read and control your
+        playback.
       </Text>
     </>,
   ],
@@ -244,7 +245,7 @@ export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
       };
     }
 
-    const avatar = await database.getUserAvataer(user.id);
+    const avatar = await database.getUserAvatar(user.id);
     const client_id = (await database.getSpotifyAppInfo()).client_id;
 
     req.session.token = randomBytes(64).toString("hex");
