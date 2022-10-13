@@ -28,6 +28,7 @@ import { withSessionSsr } from "@lib/withSession";
 import IconCard from "@components/IconCard";
 import { randomBytes } from "crypto";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 interface SpotifyLinkPageProps {
   url: string;
@@ -154,19 +155,24 @@ export default function SpotifyLinkPage({
 
   if (error)
     return (
-      <IconCard
-        icon={
-          <IconCircleX
-            color={theme.colors.red[5]}
-            size={64}
-            stroke={1.5}
-            style={{ display: "block" }}
-          />
-        }
-        title={ERRORS[error][0]}
-        description={ERRORS[error][1]}
-        close
-      />
+      <>
+        <Head>
+          <title>{`${ERRORS[error][0]} | Spoticord Accounts`}</title>
+        </Head>
+        <IconCard
+          icon={
+            <IconCircleX
+              color={theme.colors.red[5]}
+              size={64}
+              stroke={1.5}
+              style={{ display: "block" }}
+            />
+          }
+          title={ERRORS[error][0]}
+          description={ERRORS[error][1]}
+          close
+        />
+      </>
     );
 
   return (
@@ -269,7 +275,7 @@ export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
     const avatar = await database.getUserAvatar(user.id);
     const client_id = (await database.getSpotifyAppInfo()).client_id;
 
-    req.session.csrf_token = randomBytes(64).toString("hex");
+    req.session.csrf_token = randomBytes(32).toString("hex");
 
     const url = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(
       process.env.REDIRECT_URI as string

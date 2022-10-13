@@ -1,9 +1,16 @@
 interface User {
   id: string;
-  donator: boolean;
   device_name: string;
   request?: Request;
   accounts?: any[];
+}
+
+interface Account {
+  user_id: string;
+  type: "discord" | "spotify";
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
 }
 
 interface Request {
@@ -12,17 +19,29 @@ interface Request {
   expires: number;
 }
 
-interface AppInfo {
+interface SpotifyAppInfo {
   client_id: string;
 }
 
-interface TokenInfo {
+interface DiscordAppInfo {
+  client_id: string;
+}
+
+interface SpotifyTokenInfo {
   access_token: string;
   refresh_token: string;
   expires_in: number;
 }
 
-class APIError extends Error {
+interface DiscordTokenInfo {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
+  scope: string;
+}
+
+export class APIError extends Error {
   constructor(
     public readonly status: number,
     message?: string,
@@ -48,13 +67,47 @@ export async function getUserAvatar(user_id: string): Promise<string> {
   return (await response.json()).avatar;
 }
 
-export async function getSpotifyAppInfo(): Promise<AppInfo> {
+export async function getUserDiscordToken(user_id: string): Promise<string> {
+  const response = await fetch(
+    `${DATABASE_URL}/user/${user_id}/discord/access_token`
+  );
+
+  if (!response.ok) throw new APIError(response.status);
+
+  return (await response.json()).access_token;
+}
+
+export async function getUserSpotifyToken(user_id: string): Promise<string> {
+  const response = await fetch(
+    `${DATABASE_URL}/user/${user_id}/spotify/access_token`
+  );
+
+  if (!response.ok) throw new APIError(response.status);
+
+  return (await response.json()).access_token;
+}
+
+export async function getSpotifyAppInfo(): Promise<SpotifyAppInfo> {
   const response = await fetch(`${DATABASE_URL}/spotify/appinfo`);
 
   return await response.json();
 }
 
-export async function requestSpotifyToken(code: string): Promise<TokenInfo> {
+export async function getDiscordAppInfo(): Promise<DiscordAppInfo> {
+  const response = await fetch(`${DATABASE_URL}/discord/appinfo`);
+
+  return await response.json();
+}
+
+/**
+ * Acquire a Spotify access token for a user.
+ *
+ * @param code OAuth2 code received from Spotify
+ * @returns An object which contains the token information
+ */
+export async function requestSpotifyToken(
+  code: string
+): Promise<SpotifyTokenInfo> {
   const response = await fetch(`${DATABASE_URL}/spotify/token/acquire`, {
     method: "POST",
     headers: {
@@ -71,20 +124,41 @@ export async function requestSpotifyToken(code: string): Promise<TokenInfo> {
   return await response.json();
 }
 
-export async function createAccount({
+/**
+ * Acquire a Discord access token for a user.
+ *
+ * @param code OAuth2 code received from Discord
+ * @returns An object which contains the token information
+ */
+export async function requestDiscordToken(
+  code: string
+): Promise<DiscordTokenInfo> {
+  const response = await fetch(`${DATABASE_URL}/discord/token/acquire`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      code,
+      redirect_uri: process.env.DISCORD_REDIRECT_URI,
+    }),
+  });
+
+  if (!response.ok) throw new APIError(response.status);
+
+  return await response.json();
+}
+
+export async function createOrUpdateAccount({
   user_id,
+  type,
   access_token,
   refresh_token,
   expires_in,
-}: {
-  user_id: string;
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-}) {
+}: Account) {
   const data = {
     user_id,
-    type: "spotify",
+    type,
     access_token,
     refresh_token,
     expires: Math.floor(Date.now() / 1000) + expires_in,

@@ -5,23 +5,24 @@ import { withSessionSsr } from "@lib/withSession";
 import IconCard from "@components/IconCard";
 import * as spotify from "@lib/spotify";
 import Head from "next/head";
+import { APIUser, getClient, Routes } from "@lib/discord";
 
-interface SpotifyCallbackPageProps {
+interface DiscordCallbackPageProps {
   error?: "access_denied" | "bad_request" | "code_invalid" | "premium_required";
 }
 
-export default function SpotifyCallbackPage({
+export default function DiscordCallbackPage({
   error,
-}: SpotifyCallbackPageProps) {
+}: DiscordCallbackPageProps) {
   const theme = useMantineTheme();
 
   const ERRORS: { [key: string]: [string, JSX.Element] } = {
     // User cancelled the login
     access_denied: [
-      "Account connection failed",
+      "Discord login failed",
       <>
         <Text align="center" color="dimmed">
-          You have cancelled the connection process
+          You have cancelled the login process
         </Text>
       </>,
     ],
@@ -122,7 +123,6 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   if (
     !state ||
     typeof state !== "string" ||
-    !state.includes(":") ||
     !code ||
     typeof code !== "string"
   ) {
@@ -131,36 +131,23 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
 
   try {
     // Check for CSRF mismatches
-    const [request, csrf_token] = state.split(":");
-    const { csrf_token: client_csrf_token } = req.session;
+    const { csrf_token: csrf_token } = req.session;
 
-    if (csrf_token !== client_csrf_token) {
-      return { props: { error: "bad_request" } };
-    }
-
-    const user = await database.getUserByRequest(request);
-
-    // Drop expired requests
-    if (user.request!.expires < Math.floor(Date.now() / 1000)) {
+    if (state !== csrf_token) {
       return { props: { error: "bad_request" } };
     }
 
     // Code -> Access token
     const { access_token, refresh_token, expires_in } =
-      await database.requestSpotifyToken(code);
+      await database.requestDiscordToken(code);
 
-    const product = (await spotify.getCurrentUser(access_token)).product;
+    const client = getClient(access_token);
+    const user = (await client.get(Routes.user(), { auth: true })) as APIUser;
 
-    // No premium, no party
-    if (product !== "premium") {
-      return { props: { error: "premium_required" } };
-    }
-
-    // Insert Spotify account into database
     try {
       await database.createOrUpdateAccount({
         access_token,
-        type: "spotify",
+        type: "discord",
         refresh_token,
         expires_in,
         user_id: user.id,
@@ -169,10 +156,11 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
       return { props: { error: "bad_request" } };
     }
 
-    // No repeatsies
-    await database.deleteRequest(user.id);
+    req.session.user_id = user.id;
 
-    return { props: {} };
+    await req.session.save();
+
+    return { redirect: { destination: "/", permanent: false } };
   } catch (ex: any) {
     if (ex.status === 404) {
       return { props: { error: "bad_request" } };
@@ -182,7 +170,4 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
 
     throw ex;
   }
-
-  // Make TypeScript happy even though this is unreachable code :/
-  return { notFound: true };
 });

@@ -1,6 +1,5 @@
 import {
-  Accordion,
-  Alert,
+  ActionIcon,
   Avatar,
   Box,
   Button,
@@ -11,28 +10,30 @@ import {
   Paper,
   Stack,
   Text,
+  Tooltip,
   useMantineTheme,
 } from "@mantine/core";
-import {
-  IconPlus,
-  IconAlertTriangle,
-  IconBrandSpotify,
-  IconX,
-  IconCircleX,
-} from "@tabler/icons";
+import { IconLink, IconLogout, IconUnlink } from "@tabler/icons";
 import { motion } from "framer-motion";
+import { withDiscordSsr } from "@lib/withSession";
+import { useRouter } from "next/router";
+import { CDN } from "@discordjs/rest";
+import Image from "next/image";
 import * as database from "@lib/database";
 
+import discordLogo from "@images/discord-logo-blurple.svg";
 import spotifyIcon from "@images/spotify-icon.png";
-import { withSessionSsr } from "@lib/withSession";
-import IconCard from "@components/IconCard";
-import { randomBytes } from "crypto";
-import { useRouter } from "next/router";
+import Confirm from "@components/Confirm";
+import { useState } from "react";
 
-interface SpotifyLinkPageProps {
-  url: string;
+interface HomePageProps {
+  username: string;
   avatar: string;
-  error?: "invalid_token" | "expired";
+  discriminator: string;
+
+  spotify?: string;
+
+  [key: string]: unknown;
 }
 
 const useStyles = createStyles((theme) => ({
@@ -49,6 +50,7 @@ const useStyles = createStyles((theme) => ({
 
     [theme.fn.smallerThan("xs")]: {
       padding: 0,
+      minHeight: "100%",
     },
   },
 
@@ -71,99 +73,55 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.smallerThan("xs")]: {
       margin: 0,
       width: "100vw",
-      height: "100vh",
+      borderRadius: 0,
+    },
+  },
+
+  description: {
+    transform: `translateY(-60px)`,
+
+    [theme.fn.smallerThan("xs")]: {
+      transform: "none",
+    },
+
+    [`@media (max-height: 700px)`]: {
+      transform: "none",
     },
   },
 }));
 
-const SCOPES: [string, string, any][] = [
-  [
-    "streaming",
-    "Take actions in Spotify on your behalf",
-    <>
-      <Text>Stream and control Spotify on your other devices.</Text>
-      <Text color="dimmed" size="sm">
-        This is required for Spoticord to be able to read and control your
-        playback.
-      </Text>
-    </>,
-  ],
-  [
-    "user-read-private",
-    "View your Spotify account data",
-    <>
-      <Text>
-        The type of Spotify subscription you have, your account country and your
-        settings for explicit content filtering.
-      </Text>
-      <Text color="dimmed" size="sm">
-        This is used by Spoticord to determine if your account is elligible to
-        use the bot, and may be used for moderation features in the future.
-      </Text>
-      <Text mt="lg">
-        Your name and username, your profile picture, how many followers you
-        have on Spotify and your public playlists.
-      </Text>
-      <Text color="dimmed" size="sm">
-        This permission is granted by default.
-      </Text>
-    </>,
-  ],
-];
+export default function HomePage({
+  username,
+  avatar,
+  discriminator,
+  spotify: _spotify,
+}: HomePageProps) {
+  const { classes } = useStyles();
 
-const ERRORS: { [key: string]: [string, JSX.Element] } = {
-  invalid_token: [
-    "Invalid request code",
-    <>
-      <Text align="center" color="dimmed">
-        The request code you provided is invalid.
-      </Text>
-      <Text align="center" color="dimmed">
-        Please obtain a new code and try again.
-      </Text>
-    </>,
-  ],
-
-  expired: [
-    "Request code expired",
-    <>
-      <Text align="center" color="dimmed">
-        The request code you provided has expired.
-      </Text>
-      <Text align="center" color="dimmed">
-        Please obtain a new code and try again.
-      </Text>
-    </>,
-  ],
-};
-
-export default function SpotifyLinkPage() {
-  const { classes, cx } = useStyles();
+  const [spotify, setSpotify] = useState(_spotify);
 
   const theme = useMantineTheme();
   const router = useRouter();
 
-  const onCancelButtonClicked = () => {
+  const [discordModalOpened, setDiscordModalOpened] = useState(false);
+
+  const onDiscordClicked = () => {
+    // Only unlink is available on Discord
+    setDiscordModalOpened(true);
+  };
+
+  const unlinkDiscord = async () => {
+    // Unlink Discord
+  };
+
+  const unlinkSpotify = async () => {
+    setSpotify("");
+  };
+
+  const onLogoutClicked = () => {
     window.close();
     router.push("/");
   };
-
-  // if (error)
-  //   return (
-  //     <IconCard
-  //       icon={
-  //         <IconCircleX
-  //           color={theme.colors.red[5]}
-  //           size={64}
-  //           stroke={1.5}
-  //           style={{ display: "block" }}
-  //         />
-  //       }
-  //       title={ERRORS[error][0]}
-  //       description={ERRORS[error][1]}
-  //       close
-  //     />
-  //   );
 
   return (
     <Container className={classes.root}>
@@ -175,122 +133,138 @@ export default function SpotifyLinkPage() {
       >
         <Paper className={classes.container} shadow={"sm"}>
           <Stack sx={{ height: "100%" }} justify="space-between">
-            <Box>
+            <Box className={classes.description}>
               <Center>
                 <Group>
-                  {/* <Avatar src={avatar} radius={1000000} size="xl" /> */}
-                  <IconPlus size={64} color="white" />
-                  <Avatar src={spotifyIcon.src} radius={1000000} size="xl" />
+                  <Avatar src={avatar} radius={1000} size="xl" />
                 </Group>
               </Center>
 
               <Text align="center" mt="xl" size={24} weight={700}>
-                Link your Spotify account
+                Hello there, {username}
               </Text>
 
               <Text color="dimmed" align="center">
-                To use Spoticord, you must grant the following permissions
+                Here you can manage your connected accounts for Spoticord
               </Text>
-              <Paper mt="md">
-                <Accordion defaultValue={"streaming"}>
-                  {SCOPES.map(([scope, title, description]) => (
-                    <Accordion.Item key={scope} value={scope}>
-                      <Accordion.Control>
-                        <strong>{title}</strong>
-                      </Accordion.Control>
-                      <Accordion.Panel>{description}</Accordion.Panel>
-                    </Accordion.Item>
-                  ))}
-                </Accordion>
+              <Paper mt="md" radius="md">
+                <Group p="md">
+                  <Image src={spotifyIcon} width={50} height={50} />
+                  <Stack spacing={0}>
+                    <Text size={20} weight={700}>
+                      Spotify
+                    </Text>
+                    <Text size="sm" color="dimmed">
+                      {spotify
+                        ? spotify
+                        : "Click the button to link your Spotify account"}
+                    </Text>
+                  </Stack>
+                  <Tooltip
+                    label={
+                      spotify
+                        ? "Click to unlink account"
+                        : "Click to link your Spotify account"
+                    }
+                  >
+                    <ActionIcon
+                      ml="auto"
+                      color={spotify ? "red" : "green"}
+                      variant="filled"
+                      size="xl"
+                      onClick={unlinkSpotify}
+                    >
+                      {spotify ? <IconUnlink /> : <IconLink />}
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
+                <Group p="md">
+                  <Image src={discordLogo} width={50} height={50} />
+                  <Stack spacing={0}>
+                    <Text size={20} weight={700}>
+                      Discord
+                    </Text>
+                    <Text size="sm" color="dimmed">
+                      {username}#{discriminator}
+                    </Text>
+                  </Stack>
+                  <Tooltip label="Click to unlink your Discord account">
+                    <ActionIcon
+                      ml="auto"
+                      color="red"
+                      variant="filled"
+                      size="xl"
+                      onClick={onDiscordClicked}
+                    >
+                      <IconUnlink />
+                    </ActionIcon>
+                  </Tooltip>
+                </Group>
               </Paper>
             </Box>
 
             <Stack align={"flex-end"}>
-              <Alert
-                sx={{ width: "100%" }}
-                icon={<IconAlertTriangle />}
-                title="Premium account required"
+              <Button
+                leftIcon={<IconLogout />}
+                color="red"
+                onClick={onLogoutClicked}
+                fullWidth
               >
-                The use of a Spotify premium account is mandatory
-              </Alert>
-
-              <Group>
-                <Button
-                  leftIcon={<IconX />}
-                  color="red"
-                  onClick={onCancelButtonClicked}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  component="a"
-                  // href={url}
-                  leftIcon={<IconBrandSpotify />}
-                >
-                  Connect Spotify
-                </Button>
-              </Group>
+                Log out
+              </Button>
             </Stack>
           </Stack>
         </Paper>
       </motion.div>
+
+      {/* Modals */}
+      <Confirm
+        title="Unlink Discord account"
+        description="Are you sure that you want to unlink your Discord account?"
+        alert="Unlinking your Discord account will also sign you out of this page."
+        color="red"
+        opened={discordModalOpened}
+        onClose={() => setDiscordModalOpened(false)}
+      />
     </Container>
   );
 }
 
-// Path: pages/spotify/[token].tsx
-// export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
-//   // Check if the token is valid
-//   if (!params || !params.token || typeof params.token !== "string") {
-//     return {
-//       notFound: true,
-//     };
-//   }
+// Path: pages/index.tsx
+export const getServerSideProps = withDiscordSsr<HomePageProps>(
+  async (user) => {
+    const cdn = new CDN();
+    const avatar = user.avatar
+      ? cdn.avatar(user.id, user.avatar)
+      : cdn.defaultAvatar(parseInt(user.discriminator) % 5);
 
-//   const { token } = params;
+    try {
+      const swag = await database.getUserSpotifyToken(user.id);
 
-//   try {
-//     // Fetch user
-//     const user = await database.getUserByRequest(token);
+      console.log(swag);
+    } catch (ex) {
+      const error = ex as database.APIError;
 
-//     // Check if token has expired
-//     if (user.request!.expires < Math.floor(Date.now() / 1000)) {
-//       return {
-//         props: {
-//           error: "expired",
-//         },
-//       };
-//     }
+      if (error.status !== 404) {
+        console.error(error);
+      }
 
-//     const avatar = await database.getUserAvatar(user.id);
-//     const client_id = (await database.getSpotifyAppInfo()).client_id;
+      return {
+        props: {
+          username: user.username,
+          avatar,
+          discriminator: user.discriminator,
+        },
+      };
+    }
 
-//     req.session.csrf_token = randomBytes(64).toString("hex");
-
-//     const url = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(
-//       process.env.REDIRECT_URI as string
-//     )}&state=${encodeURIComponent(
-//       `${token}:${req.session.csrf_token}`
-//     )}&scope=${SCOPES.map((scope) => scope[0]).join("+")}&show_dialog=true`;
-
-//     await req.session.save();
-
-//     return {
-//       props: {
-//         token,
-//         avatar,
-//         url,
-//       },
-//     };
-//   } catch (ex: any) {
-//     if (ex.status === 404) {
-//       return {
-//         props: {
-//           error: "invalid_token",
-//         },
-//       };
-//     }
-
-//     throw ex;
-//   }
-// });
+    return {
+      props: {
+        username: user.username,
+        avatar,
+        discriminator: user.discriminator,
+        spotify: "RoDaBaFilms",
+      },
+    };
+  }
+);
