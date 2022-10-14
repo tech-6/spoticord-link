@@ -72,7 +72,7 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.smallerThan("xs")]: {
       margin: 0,
       width: "100vw",
-      height: "100vh",
+      borderRadius: 0,
     },
   },
 }));
