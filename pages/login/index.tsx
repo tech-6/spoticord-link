@@ -32,7 +32,7 @@ const useStyles = createStyles((theme) => ({
     justifyContent: "center",
     alignItems: "flex-start",
 
-    [theme.fn.smallerThan("md")]: {
+    [theme.fn.smallerThan("xl")]: {
       alignItems: "center",
     },
 
@@ -122,13 +122,14 @@ export default function LoginPage({ url }: LoginPageProps) {
               </Center>
 
               <Text align="center" mt="xl" size={24} weight={700}>
-                Log in with Discord
+                Spotify Accounts
               </Text>
 
               <Text color="dimmed" align="center">
-                To log in, we request the following permissions from your
-                Discord account
+                To be able to use Spoticord Accounts, you must first log in with
+                your Discord account.
               </Text>
+
               <Paper mt="md">
                 <Accordion defaultValue={"streaming"}>
                   {SCOPES.map(([scope, title, description]) => (
@@ -154,16 +155,16 @@ export default function LoginPage({ url }: LoginPageProps) {
                 your Discord account with Spoticord
               </Alert>
 
-              <Group>
-                <Button
-                  component="a"
-                  href={url}
-                  leftIcon={<IconBrandDiscord />}
-                  color="indigo"
-                >
-                  Log in with Discord
-                </Button>
-              </Group>
+              <Button
+                component="a"
+                href={url}
+                leftIcon={<IconBrandDiscord />}
+                color="indigo"
+                fullWidth
+                size="lg"
+              >
+                Log in with Discord
+              </Button>
             </Stack>
           </Stack>
         </Paper>

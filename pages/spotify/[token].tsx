@@ -44,7 +44,7 @@ const useStyles = createStyles((theme) => ({
     justifyContent: "center",
     alignItems: "flex-start",
 
-    [theme.fn.smallerThan("md")]: {
+    [theme.fn.smallerThan("xl")]: {
       alignItems: "center",
     },
 

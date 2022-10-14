@@ -7,6 +7,7 @@ interface ConfirmProps {
 
   alert?: string;
   color?: MantineColor;
+  icon?: React.ReactNode;
 
   invertColors?: boolean;
 
@@ -18,6 +19,7 @@ export default function Confirm({
   title,
   description,
   color,
+  icon,
   alert,
   invertColors,
   opened,
@@ -36,7 +38,11 @@ export default function Confirm({
       </Text>
 
       {alert && (
-        <Alert color={color ?? "teal"} icon={<IconAlertTriangle />} mb="xl">
+        <Alert
+          color={color ?? "teal"}
+          icon={icon || <IconAlertTriangle />}
+          mb="xl"
+        >
           {alert}
         </Alert>
       )}

@@ -77,6 +77,18 @@ export async function getUserDiscordToken(user_id: string): Promise<string> {
   return (await response.json()).access_token;
 }
 
+export async function revokeDiscordToken(access_token: string): Promise<void> {
+  const response = await fetch(`${DATABASE_URL}/discord/token/revoke`, {
+    method: "POST",
+    body: JSON.stringify({ access_token }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) throw new APIError(response.status);
+}
+
 export async function getUserSpotifyToken(user_id: string): Promise<string> {
   const response = await fetch(
     `${DATABASE_URL}/user/${user_id}/spotify/access_token`
@@ -95,6 +107,14 @@ export async function getSpotifyAppInfo(): Promise<SpotifyAppInfo> {
 
 export async function getDiscordAppInfo(): Promise<DiscordAppInfo> {
   const response = await fetch(`${DATABASE_URL}/discord/appinfo`);
+
+  return await response.json();
+}
+
+export async function getRequestByUserId(user_id: string): Promise<Request> {
+  const response = await fetch(`${DATABASE_URL}/request/by-user/${user_id}`);
+
+  if (!response.ok) throw new APIError(response.status, await response.text());
 
   return await response.json();
 }
@@ -177,8 +197,36 @@ export async function createOrUpdateAccount({
   }
 }
 
+export async function createRequest(user_id: string): Promise<Request> {
+  const response = await fetch(`${DATABASE_URL}/request`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      user_id,
+      expires: Math.floor(Date.now() / 1000) + 3600,
+    }),
+  });
+
+  if (!response.ok) throw new APIError(response.status, await response.text());
+
+  return await response.json();
+}
+
 export async function deleteRequest(user_id: string) {
   const response = await fetch(`${DATABASE_URL}/request/${user_id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) throw new APIError(response.status);
+}
+
+export async function deleteAccount(
+  user_id: string,
+  type: "spotify" | "discord"
+) {
+  const response = await fetch(`${DATABASE_URL}/account/${user_id}/${type}`, {
     method: "DELETE",
   });
 

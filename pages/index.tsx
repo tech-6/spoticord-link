@@ -7,13 +7,19 @@ import {
   Container,
   createStyles,
   Group,
+  LoadingOverlay,
   Paper,
   Stack,
   Text,
   Tooltip,
   useMantineTheme,
 } from "@mantine/core";
-import { IconLink, IconLogout, IconUnlink } from "@tabler/icons";
+import {
+  IconInfoCircle,
+  IconLink,
+  IconLogout,
+  IconUnlink,
+} from "@tabler/icons";
 import { motion } from "framer-motion";
 import { withDiscordSsr } from "@lib/withSession";
 import { useRouter } from "next/router";
@@ -25,6 +31,7 @@ import discordLogo from "@images/discord-logo-blurple.svg";
 import spotifyIcon from "@images/spotify-icon.png";
 import Confirm from "@components/Confirm";
 import { useState } from "react";
+import { getCurrentUser } from "@lib/spotify";
 
 interface HomePageProps {
   username: string;
@@ -44,7 +51,7 @@ const useStyles = createStyles((theme) => ({
     justifyContent: "center",
     alignItems: "flex-start",
 
-    [theme.fn.smallerThan("md")]: {
+    [theme.fn.smallerThan("xl")]: {
       alignItems: "center",
     },
 
@@ -103,24 +110,63 @@ export default function HomePage({
   const theme = useMantineTheme();
   const router = useRouter();
 
+  const [loading, setLoading] = useState(false);
   const [discordModalOpened, setDiscordModalOpened] = useState(false);
+  const [spotifyModalOpened, setSpotifyModalOpened] = useState(false);
 
   const onDiscordClicked = () => {
     // Only unlink is available on Discord
     setDiscordModalOpened(true);
   };
 
-  const unlinkDiscord = async () => {
-    // Unlink Discord
+  const unlinkDiscord = () => {
+    setLoading(true);
+
+    fetch("/api/unlink/discord")
+      .then(() => router.push("/login"))
+      .catch(() => {
+        // Show some error
+      })
+      .finally(() => setLoading(false));
   };
 
-  const unlinkSpotify = async () => {
-    setSpotify("");
+  const unlinkSpotify = () => {
+    setLoading(true);
+
+    fetch("/api/unlink/spotify")
+      .then(() => setSpotify(undefined))
+      .catch(() => {
+        // Show some error
+      })
+      .finally(() => setLoading(false));
+  };
+
+  const onSpotifyClicked = async () => {
+    if (spotify) {
+      // Unlink
+      setSpotifyModalOpened(true);
+    } else {
+      setLoading(true);
+
+      fetch("/api/link/spotify", {
+        method: "POST",
+      })
+        .then((resp) => resp.json())
+        .then(({ token }) => router.push(`/spotify/${token}`))
+        .catch(() => {
+          // Show some error
+        })
+        .finally(() => setLoading(false));
+    }
   };
 
   const onLogoutClicked = () => {
-    window.close();
-    router.push("/");
+    setLoading(true);
+
+    fetch("/api/logout")
+      .then(() => router.push("/"))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -147,9 +193,16 @@ export default function HomePage({
               <Text color="dimmed" align="center">
                 Here you can manage your connected accounts for Spoticord
               </Text>
-              <Paper mt="md" radius="md">
+              <Paper mt="md" radius="md" sx={{ position: "relative" }}>
+                <LoadingOverlay visible={loading} />
+
                 <Group p="md">
-                  <Image src={spotifyIcon} width={50} height={50} />
+                  <Image
+                    src={spotifyIcon}
+                    width={50}
+                    height={50}
+                    alt="Spotify logo"
+                  />
                   <Stack spacing={0}>
                     <Text size={20} weight={700}>
                       Spotify
@@ -172,14 +225,19 @@ export default function HomePage({
                       color={spotify ? "red" : "green"}
                       variant="filled"
                       size="xl"
-                      onClick={unlinkSpotify}
+                      onClick={onSpotifyClicked}
                     >
                       {spotify ? <IconUnlink /> : <IconLink />}
                     </ActionIcon>
                   </Tooltip>
                 </Group>
                 <Group p="md">
-                  <Image src={discordLogo} width={50} height={50} />
+                  <Image
+                    src={discordLogo}
+                    width={50}
+                    height={50}
+                    alt="Discord logo"
+                  />
                   <Stack spacing={0}>
                     <Text size={20} weight={700}>
                       Discord
@@ -209,6 +267,7 @@ export default function HomePage({
                 color="red"
                 onClick={onLogoutClicked}
                 fullWidth
+                loading={loading}
               >
                 Log out
               </Button>
@@ -222,9 +281,23 @@ export default function HomePage({
         title="Unlink Discord account"
         description="Are you sure that you want to unlink your Discord account?"
         alert="Unlinking your Discord account will also sign you out of this page."
-        color="red"
+        color="blue"
+        icon={<IconInfoCircle />}
         opened={discordModalOpened}
-        onClose={() => setDiscordModalOpened(false)}
+        onClose={(confirmed) => (
+          confirmed && unlinkDiscord(), setDiscordModalOpened(false)
+        )}
+      />
+
+      <Confirm
+        title="Unlink Spotify account"
+        description="Are you sure that you want to unlink your Spotify account?"
+        alert="Unlinking your Spotify account will prevent you from using Spoticord."
+        color="red"
+        opened={spotifyModalOpened}
+        onClose={(confirmed) => (
+          confirmed && unlinkSpotify(), setSpotifyModalOpened(false)
+        )}
       />
     </Container>
   );
@@ -239,13 +312,22 @@ export const getServerSideProps = withDiscordSsr<HomePageProps>(
       : cdn.defaultAvatar(parseInt(user.discriminator) % 5);
 
     try {
-      const swag = await database.getUserSpotifyToken(user.id);
+      // Check if spotify is linked, if it is, get the username
+      const spotify_token = await database.getUserSpotifyToken(user.id);
 
-      console.log(swag);
+      return {
+        props: {
+          username: user.username,
+          avatar,
+          discriminator: user.discriminator,
+          spotify: (await getCurrentUser(spotify_token)).display_name,
+        },
+      };
     } catch (ex) {
       const error = ex as database.APIError;
 
       if (error.status !== 404) {
+        // Woopsie error, no intendo
         console.error(error);
       }
 
@@ -257,14 +339,5 @@ export const getServerSideProps = withDiscordSsr<HomePageProps>(
         },
       };
     }
-
-    return {
-      props: {
-        username: user.username,
-        avatar,
-        discriminator: user.discriminator,
-        spotify: "RoDaBaFilms",
-      },
-    };
   }
 );

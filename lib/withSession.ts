@@ -5,6 +5,8 @@ import {
   GetServerSidePropsContext,
   GetServerSidePropsResult,
   NextApiHandler,
+  NextApiRequest,
+  NextApiResponse,
 } from "next";
 import * as database from "@lib/database";
 import { APIUser, getClient, Routes } from "./discord";
@@ -28,6 +30,40 @@ const sessionOptions: IronSessionOptions = {
 
 export function withSessionRoute(handler: NextApiHandler) {
   return withIronSessionApiRoute(handler, sessionOptions);
+}
+
+export function withDiscordRoute<T = any>(
+  handler: (
+    req: NextApiRequest & { user: APIUser },
+    res: NextApiResponse<T>
+  ) => unknown | Promise<unknown>
+) {
+  return withSessionRoute(async (req, res) => {
+    if (!req.session.user_id) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const token = await database.getUserDiscordToken(req.session.user_id);
+
+    if (!token) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    const client = getClient(token);
+
+    const user = (await client.get(Routes.user())) as APIUser;
+
+    if (!user) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+
+    (req as any).user = user;
+
+    handler(req as any, res);
+  });
 }
 
 export function withSessionSsr<
