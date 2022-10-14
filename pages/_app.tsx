@@ -4,6 +4,8 @@ import { createEmotionCache, MantineProvider } from "@mantine/core";
 
 import spoticordLogo from "@images/logo.webp";
 
+import "styles/main.css";
+
 const cache = createEmotionCache({ key: "css" });
 
 function MyApp({ Component, pageProps }: AppProps) {
