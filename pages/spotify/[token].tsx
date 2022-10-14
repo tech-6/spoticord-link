@@ -278,7 +278,7 @@ export const getServerSideProps = withSessionSsr(async ({ params, req }) => {
     req.session.csrf_token = randomBytes(32).toString("hex");
 
     const url = `https://accounts.spotify.com/authorize?client_id=${client_id}&response_type=code&redirect_uri=${encodeURIComponent(
-      process.env.REDIRECT_URI as string
+      process.env.SPOTIFY_REDIRECT_URI as string
     )}&state=${encodeURIComponent(
       `${token}:${req.session.csrf_token}`
     )}&scope=${SCOPES.map((scope) => scope[0]).join("+")}&show_dialog=true`;

@@ -135,7 +135,7 @@ export async function requestSpotifyToken(
     },
     body: JSON.stringify({
       code,
-      redirect_uri: process.env.REDIRECT_URI,
+      redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
     }),
   });
 
