@@ -95,6 +95,54 @@ const useStyles = createStyles((theme) => ({
       transform: "none",
     },
   },
+
+  account: {
+    "& img": {
+      width: 50,
+      height: 50,
+
+      [theme.fn.smallerThan("xs")]: {
+        width: 32,
+        height: 32,
+      },
+    },
+
+    "& .mantine-Text-root:nth-of-type(1)": {
+      fontSize: theme.fontSizes.xl,
+
+      [theme.fn.smallerThan("xs")]: {
+        fontSize: theme.fontSizes.md,
+      },
+    },
+
+    "& .mantine-Text-root:nth-of-type(2)": {
+      fontSize: theme.fontSizes.sm,
+
+      [theme.fn.smallerThan("xs")]: {
+        fontSize: theme.fontSizes.xs,
+      },
+    },
+
+    "& .mantine-UnstyledButton-root": {
+      width: 44,
+      height: 44,
+
+      "& svg": {
+        width: 24,
+        height: 24,
+      },
+
+      [theme.fn.smallerThan("xs")]: {
+        width: 34,
+        height: 34,
+
+        "& svg": {
+          width: 20,
+          height: 20,
+        },
+      },
+    },
+  },
 }));
 
 export default function HomePage({
@@ -196,18 +244,13 @@ export default function HomePage({
               <Paper mt="md" radius="md" sx={{ position: "relative" }}>
                 <LoadingOverlay visible={loading} />
 
-                <Group p="md">
-                  <Image
-                    src={spotifyIcon}
-                    width={50}
-                    height={50}
-                    alt="Spotify logo"
-                  />
+                <Group p="md" className={classes.account}>
+                  <img src={spotifyIcon.src} alt="Spotify logo" />
                   <Stack spacing={0}>
-                    <Text size={20} weight={700}>
+                    <Text size={16} weight={700}>
                       Spotify
                     </Text>
-                    <Text size="sm" color="dimmed">
+                    <Text size="xs" color="dimmed">
                       {spotify
                         ? spotify
                         : "Click the button to link your Spotify account"}
@@ -224,20 +267,15 @@ export default function HomePage({
                       ml="auto"
                       color={spotify ? "red" : "green"}
                       variant="filled"
-                      size="xl"
+                      size="lg"
                       onClick={onSpotifyClicked}
                     >
                       {spotify ? <IconUnlink /> : <IconLink />}
                     </ActionIcon>
                   </Tooltip>
                 </Group>
-                <Group p="md">
-                  <Image
-                    src={discordLogo}
-                    width={50}
-                    height={50}
-                    alt="Discord logo"
-                  />
+                <Group p="md" className={classes.account}>
+                  <img src={discordLogo.src} alt="Discord logo" />
                   <Stack spacing={0}>
                     <Text size={20} weight={700}>
                       Discord
@@ -251,7 +289,6 @@ export default function HomePage({
                       ml="auto"
                       color="red"
                       variant="filled"
-                      size="xl"
                       onClick={onDiscordClicked}
                     >
                       <IconUnlink />

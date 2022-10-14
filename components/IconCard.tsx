@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 
 const useStyles = createStyles((theme) => ({
   root: {
-    height: "100vh",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -38,9 +38,8 @@ const useStyles = createStyles((theme) => ({
 
     [theme.fn.smallerThan("xs")]: {
       margin: 0,
-      minWidth: "100%",
       width: "100vw",
-      height: "100vh",
+      borderRadius: 0,
     },
   },
 }));
