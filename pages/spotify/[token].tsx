@@ -149,7 +149,9 @@ export default function SpotifyLinkPage({
   const router = useRouter();
 
   const onCancelButtonClicked = () => {
-    window.close();
+    const params = new URLSearchParams(router.asPath.split(/\?(.*)/s)[1]);
+
+    params.get("auth") !== "true" && window.close();
     router.push("/");
   };
 

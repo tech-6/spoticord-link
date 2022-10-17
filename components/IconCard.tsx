@@ -9,9 +9,10 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconArrowLeft, IconX } from "@tabler/icons";
+import { IconArrowLeft, IconHome, IconX } from "@tabler/icons";
 import { motion } from "framer-motion";
 import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -70,6 +71,7 @@ export default function ErrorCard({
 }: ErrorCardProps) {
   const { classes } = useStyles();
   const router = useRouter();
+  const [history, setHistory] = useState<History>();
 
   const onButtonClicked = () => {
     if (close) {
@@ -77,6 +79,10 @@ export default function ErrorCard({
       router.push("/");
     } else router.back();
   };
+
+  useEffect(() => {
+    setHistory(window.history);
+  }, []);
 
   return (
     <Container className={classes.root}>
@@ -114,12 +120,22 @@ export default function ErrorCard({
             <Button
               mt="xl"
               fullWidth
-              leftIcon={close ? <IconX /> : <IconArrowLeft />}
+              leftIcon={
+                close ? (
+                  history?.length === 1 ? (
+                    <IconX />
+                  ) : (
+                    <IconHome />
+                  )
+                ) : (
+                  <IconArrowLeft />
+                )
+              }
               color={closeColor || "red"}
               onClick={onButtonClicked}
               styles={{ leftIcon: { marginRight: 4 } }}
             >
-              {close ? "Close" : "Back"}
+              {close ? (history?.length === 1 ? "Close" : "Home") : "Back"}
             </Button>
           </Stack>
         </Paper>

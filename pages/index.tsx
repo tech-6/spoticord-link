@@ -200,7 +200,7 @@ export default function HomePage({
         method: "POST",
       })
         .then((resp) => resp.json())
-        .then(({ token }) => router.push(`/spotify/${token}`))
+        .then(({ token }) => router.push(`/spotify/${token}?auth=true`))
         .catch(() => {
           // Show some error
         })

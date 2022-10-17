@@ -21,7 +21,9 @@ export default function SpotifyCallbackPage({
       "Account connection failed",
       <>
         <Text align="center" color="dimmed">
-          You have cancelled the connection process
+          You have cancelled the connection process.
+          <br />
+          You may close this tab or window now.
         </Text>
       </>,
     ],
@@ -36,6 +38,8 @@ export default function SpotifyCallbackPage({
         <Text align="center" color="dimmed">
           If the problem keeps happening, please restart your browser and try
           again.
+          <br />
+          You may close this tab or window now.
         </Text>
       </>,
     ],
@@ -46,6 +50,8 @@ export default function SpotifyCallbackPage({
       <>
         <Text align="center" color="dimmed">
           The authorization code provided is invalid. Please try again.
+          <br />
+          You may close this tab or window now.
         </Text>
       </>,
     ],
@@ -55,6 +61,8 @@ export default function SpotifyCallbackPage({
       <>
         <Text align="center" color="dimmed">
           You need a Spotify Premium account to be able to use Spoticord
+          <br />
+          You may close this tab or window now.
         </Text>
       </>,
     ],
@@ -101,6 +109,8 @@ export default function SpotifyCallbackPage({
           <>
             <Text align="center" color="dimmed">
               Your Spotify account has successfully been linked with Spoticord.
+              <br />
+              You may close this tab or window now.
             </Text>
           </>
         }
