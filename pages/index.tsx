@@ -251,9 +251,7 @@ export default function HomePage({
                       Spotify
                     </Text>
                     <Text size="xs" color="dimmed">
-                      {spotify
-                        ? spotify
-                        : "Click the button to link your Spotify account"}
+                      {spotify ? spotify : "Link your Spotify account"}
                     </Text>
                   </Stack>
                   <Tooltip

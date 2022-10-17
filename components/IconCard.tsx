@@ -30,6 +30,13 @@ const useStyles = createStyles((theme) => ({
     },
   },
 
+  wrapper: {
+    [theme.fn.smallerThan("xs")]: {
+      width: "100%",
+      minHeight: "100%",
+    },
+  },
+
   container: {
     minWidth: 500,
     background: theme.colors.dark[6],
@@ -37,8 +44,10 @@ const useStyles = createStyles((theme) => ({
     borderRadius: theme.radius.md,
 
     [theme.fn.smallerThan("xs")]: {
+      minWidth: 0,
       margin: 0,
       width: "100vw",
+      height: "100%",
       borderRadius: 0,
     },
   },
@@ -72,6 +81,7 @@ export default function ErrorCard({
   return (
     <Container className={classes.root}>
       <motion.div
+        className={classes.wrapper}
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
       >
