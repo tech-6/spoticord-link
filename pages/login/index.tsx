@@ -122,7 +122,7 @@ export default function LoginPage({ url }: LoginPageProps) {
               </Center>
 
               <Text align="center" mt="xl" size={24} weight={700}>
-                Spotify Accounts
+                Spoticord Accounts
               </Text>
 
               <Text color="dimmed" align="center">
