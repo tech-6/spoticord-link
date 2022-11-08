@@ -124,7 +124,8 @@ export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
     !state ||
     typeof state !== "string" ||
     !code ||
-    typeof code !== "string"
+    typeof code !== "string" ||
+    !state.match(/^[a-zA-Z0-9:]*$/g)
   ) {
     return { props: { error: "bad_request" } };
   }
