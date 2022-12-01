@@ -11,8 +11,6 @@ import {
 import * as database from "@lib/database";
 import { APIUser, getClient, Routes } from "./discord";
 
-assert(process.env.SESSION_PASSWORD, "SESSION_PASSWORD is required");
-
 declare module "iron-session" {
   interface IronSessionData {
     csrf_token?: string;
