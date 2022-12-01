@@ -27,8 +27,9 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-ENV SESSION_PASSWORD=${SESSION_PASSWORD}
-RUN yarn build
+RUN --mount=type=secret,id=SESSION_PASSWORD \
+  export SESSION_PASSWORD=$(cat /run/secrets/SESSION_PASSWORD) && \ 
+  yarn build
 
 # If using npm comment out above and use below instead
 # RUN npm run build
