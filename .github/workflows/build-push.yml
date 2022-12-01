@@ -27,8 +27,8 @@ jobs:
       - name: Build image and push to registry
         uses: docker/build-push-action@v2
         with:
-          build-args:
-            SESSION_PASSWORD: ${{ secrets.SESSION_PASSWORD }}
+          build-args: |
+            SESSION_PASSWORD=${{ secrets.SESSION_PASSWORD }}
           context: .
           tags: |
             ${{ secrets.REGISTRY_URL }}/spoticord/accounts:latest
