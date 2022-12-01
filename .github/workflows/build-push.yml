@@ -26,6 +26,8 @@ jobs:
         
       - name: Build image and push to registry
         uses: docker/build-push-action@v2
+        env:
+          SESSION_PASSWORD: ${{ secrets.SuperSecretSESSION_PASSWORD }}
         with:
           context: .
           tags: |
