@@ -20,7 +20,7 @@ declare module "iron-session" {
 
 const sessionOptions: IronSessionOptions = {
   cookieName: "csrf-session",
-  password: process.env.SESSION_PASSWORD,
+  password: process.env.SESSION_PASSWORD!,
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
   },
