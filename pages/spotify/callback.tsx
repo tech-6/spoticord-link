@@ -124,8 +124,6 @@ export default function SpotifyCallbackPage({
 export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   const { code, error, state } = query;
   
-  console.log({query});
-
   if (error) {
     return { props: { error } };
   }
