@@ -115,8 +115,6 @@ export default function DiscordCallbackPage({
 export const getServerSideProps = withSessionSsr(async ({ req, query }) => {
   const { code, error, state } = query;
 
-  console.log({ query, session: req.session });
-
   if (error) {
     return { props: { error } };
   }
