@@ -287,6 +287,7 @@ export default function HomePage({
                       ml="auto"
                       color="red"
                       variant="filled"
+                      size="lg"
                       onClick={onDiscordClicked}
                     >
                       <IconUnlink />
