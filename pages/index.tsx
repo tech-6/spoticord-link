@@ -275,10 +275,10 @@ export default function HomePage({
                 <Group p="md" className={classes.account}>
                   <img src={discordLogo.src} alt="Discord logo" />
                   <Stack spacing={0}>
-                    <Text size={20} weight={700}>
+                    <Text size={16} weight={700}>
                       Discord
                     </Text>
-                    <Text size="sm" color="dimmed">
+                    <Text size="xs" color="dimmed">
                       {username}#{discriminator}
                     </Text>
                   </Stack>
