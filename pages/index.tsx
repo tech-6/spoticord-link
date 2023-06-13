@@ -279,7 +279,9 @@ export default function HomePage({
                       Discord
                     </Text>
                     <Text size="xs" color="dimmed">
-                      {username}#{discriminator}
+                      {discriminator === "0"
+                        ? `@${username}`
+                        : `${username}#${discriminator}`}
                     </Text>
                   </Stack>
                   <Tooltip label="Click to unlink your Discord account">
