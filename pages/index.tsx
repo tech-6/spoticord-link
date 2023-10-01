@@ -347,7 +347,11 @@ export const getServerSideProps = withDiscordSsr<HomePageProps>(
     const cdn = new CDN();
     const avatar = user.avatar
       ? cdn.avatar(user.id, user.avatar)
-      : cdn.defaultAvatar(parseInt(user.discriminator) % 5);
+      : cdn.defaultAvatar(
+          user.discriminator === "0"
+            ? parseInt(((BigInt(user.id) >> 22n) % 6n).toString())
+            : parseInt(user.discriminator) % 5
+        );
 
     try {
       // Check if spotify is linked, if it is, get the username
