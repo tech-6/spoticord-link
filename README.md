@@ -1,6 +1,6 @@
 # Spoticord Link
 
-Spoticord Link is a Next.js application that enabled users to connect their Spotify accounts to [Spoticord](https://github.com/SpoticordMusic/spoticord).
+Spoticord Link is a Next.js application that enables users to connect their Spotify accounts to [Spoticord](https://github.com/SpoticordMusic/spoticord).
 
 ## Environment
 
