@@ -1,57 +1,59 @@
-# https://raw.githubusercontent.com/vercel/next.js/canary/examples/with-docker/Dockerfile
+FROM node:20-alpine AS base
 
-# Install dependencies only when needed
-FROM --platform=linux/amd64 node:16-alpine AS deps
+# mostly inspired from https://github.com/BretFisher/node-docker-good-defaults/blob/main/Dockerfile & https://github.com/remix-run/example-trellix/blob/main/Dockerfile
+
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
+RUN corepack enable && corepack prepare pnpm@9.5.0 --activate
+# Set the store dir to a folder that is not in the project
+RUN pnpm config set store-dir ~/.pnpm-store
+RUN pnpm fetch
+
+# 1. Install all dependencies including dev dependencies
+FROM base AS deps
+
+USER node
+# WORKDIR now sets correct permissions if you set USER first so `USER node` has permissions on the `/app` directory
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+COPY --chown=node:node package.json pnpm-lock.yaml* ./
 
+USER root
+RUN pnpm install --frozen-lockfile --prefer-offline
 
-# Rebuild the source code only when needed
-FROM --platform=linux/amd64 node:16-alpine AS builder
+# 2. Rebuild the source code only when needed
+FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+COPY --chown=node:node . .
 
-RUN yarn build
+# This app does not have any public environment variables, so we don't need to copy any .env files here
+# Environment variables should be provided when creating the container (e.g. through CLI args or a docker-compose file)
 
-# If using npm comment out above and use below instead
-# RUN npm run build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Production image, copy all the files and run next
-FROM node:16-alpine AS runner
+RUN pnpm build
+
+# 3. Production image, copy all the files and run next
+FROM base AS runner
+USER node
 WORKDIR /app
-
-ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
+ENV PORT=3000
+ENV HOSTNAME='0.0.0.0'
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY --from=builder --chown=node:node /app/public ./public
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
 CMD ["node", "server.js"]

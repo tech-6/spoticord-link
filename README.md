@@ -1,13 +1,13 @@
-# Spoticord Accounts
+# Spoticord Link
 
-Relatively simple webapp for managing linked accounts for Spoticord
+Spoticord Link is a Next.js application that enabled users to connect their Spotify accounts to [Spoticord](https://github.com/SpoticordMusic/spoticord).
 
-# Environment variables
+## Environment
 
-|       Variable       | Description                                                                                                                                              | Required | Default |
-| :------------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-|   SESSION_PASSWORD   | The secret to encrypt session cookies, must be at least 32 characters long                                                                               | Yes      | _N/A_   |
-|         PORT         | The port number to listen on                                                                                                                             | No       | 3000    |
-|     DATABASE_URL     | The base URL of [the Database API](https://github.com/SpoticordMusic/spoticord-database) **without** trailing slash _(e.g. http://database.example.com)_ | Yes      | _N/A_   |
-| SPOTIFY_REDIRECT_URI | The URI to redirect to after (un)successful Spotify authentication (callback is located at /spotify/callback)                                            | Yes      | _N/A_   |
-| DISCORD_REDIRECT_URI | The URI to redirect to after (un)successful Discord authentication (callback is located at /login/callback)                                              | Yes      | _N/A_   |
+|       Variable        | Description                                                                                                    |
+| :-------------------: | -------------------------------------------------------------------------------------------------------------- |
+|     DISCORD_TOKEN     | Any Discord bot token (can be different from a Spoticord instance), for resolving user information             |
+|     DATABASE_URL      | A postgresql database URL, which must point to the same database as your Spoticord instance                    |
+|   SPOTIFY_CLIENT_ID   | Your Spotify app Client ID                                                                                     |
+| SPOTIFY_CLIENT_SECRET | Your spotify app Client Secret                                                                                 |
+| SPOTIFY_REDIRECT_URI  | The full URI to redirect to after (un)successful Spotify authentication (e.g. http://localhost:3000/authorize) |

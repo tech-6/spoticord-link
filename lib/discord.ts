@@ -1,8 +1,7 @@
 import { REST } from "@discordjs/rest";
+import { APIUser, Routes } from "discord-api-types/v10";
 
-export * from "discord-api-types/v10";
-export const getClient = (token?: string) => {
-  const client = new REST({ version: "10", authPrefix: "Bearer" });
-
-  return token ? client.setToken(token) : client;
-};
+export async function getUserInfo(id: string): Promise<APIUser> {
+  const client = new REST().setToken(process.env.DISCORD_TOKEN!);
+  return (await client.get(Routes.user(id))) as APIUser;
+}
