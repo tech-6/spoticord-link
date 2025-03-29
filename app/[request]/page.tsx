@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+export const runtime = 'edge';
 export default async function LinkAccountPage({
   params: { request },
 }: {

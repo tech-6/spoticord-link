@@ -22,6 +22,7 @@ const ERRORS: { [key: string]: { title: string; message: string } } = {
   },
 };
 
+export const runtime = 'edge';
 export default async function LinkAccountPage({
   searchParams: { code, error, state },
 }: {
